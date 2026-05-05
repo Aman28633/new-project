@@ -1,6 +1,19 @@
 import type { AuthResponse, Dashboard, Project, ProjectRole, Role, Task, TaskPriority, TaskStatus, User } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+const CONFIGURED_API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+function getApiBase() {
+  if (
+    typeof window !== "undefined" &&
+    CONFIGURED_API_BASE &&
+    /localhost|127\.0\.0\.1/.test(CONFIGURED_API_BASE) &&
+    !/localhost|127\.0\.0\.1/.test(window.location.hostname)
+  ) {
+    return "/api";
+  }
+
+  return CONFIGURED_API_BASE ?? "/api";
+}
 
 type ApiOptions = {
   token?: string;
@@ -9,7 +22,7 @@ type ApiOptions = {
 };
 
 async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(`${getApiBase()}${path}`, {
     method: options.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
