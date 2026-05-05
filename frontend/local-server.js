@@ -16,7 +16,7 @@ const html = `<!doctype html>
 </head>
 <body><div id="root"></div>
 <script>
-const API="http://127.0.0.1:8000/api";
+const API="/api";
 let token=localStorage.getItem("ttm_token")||"", user=null, projects=[], users=[], tasks=[], dash={total_projects:0,total_tasks:0,assigned_to_me:0,overdue:0,by_status:{todo:0,in_progress:0,review:0,done:0},tasks:[]}, selected=null, mode="signup", msg="";
 const status={todo:"To do",in_progress:"In progress",review:"Review",done:"Done"}, pri={low:"Low",medium:"Medium",high:"High"};
 async function req(path, opts={}){const r=await fetch(API+path,{method:opts.method||"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:opts.body?JSON.stringify(opts.body):undefined});if(!r.ok){let p=await r.json().catch(()=>({detail:"Request failed"}));throw Error(p.detail||"Request failed")}return r.json()}
