@@ -39,6 +39,41 @@ function render(){user?renderApp():renderAuth()}init();
 </script></body></html>`;
 
 http.createServer((req, res) => {
+  if (req.url.startsWith("/api/") || req.url === "/health") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      const proxyPath = req.url === "/health" ? "/health" : req.url;
+      const proxy = http.request(
+        {
+          hostname: "127.0.0.1",
+          port: 8000,
+          path: proxyPath,
+          method: req.method,
+          headers: {
+            ...req.headers,
+            host: "127.0.0.1:8000",
+          },
+        },
+        (proxyRes) => {
+          res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+          proxyRes.pipe(res);
+        },
+      );
+      proxy.on("error", () => {
+        res.writeHead(502, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ detail: "Backend API is not running" }));
+      });
+      if (body) {
+        proxy.write(body);
+      }
+      proxy.end();
+    });
+    return;
+  }
+
   res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   res.end(html);
 }).listen(3000, "127.0.0.1", () => {
